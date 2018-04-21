@@ -5,7 +5,7 @@ from django_webtest import WebTest
 from . import views
 
 # Run tests:
-# cd ~/code/django/mytests
+# cd ~/code/django/testing
 # pm test run.tests
 
 class ViewTests1(TestCase):

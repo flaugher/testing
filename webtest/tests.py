@@ -12,7 +12,7 @@ app = TestApp(application)
 resp = app.get('/')
 
 # Run the test:
-# cd ~/code/django/mytests
+# cd ~/code/django/testing
 # python webtest/tests.py
 
 # Check the results
