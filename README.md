@@ -1,1 +1,1 @@
-/Users/flaugher/info/testing/README.md
+See ~/info/testing/README.md
