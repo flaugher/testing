@@ -30,6 +30,12 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+
+PROJ_APPS = [
+    'polls.apps.PollsConfig',
+    'run',
+]
+
 DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,14 +43,8 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #'test_without_migrations',
 ]
-
-PROJ_APPS = [
-    'run',
-]
-
-INSTALLED_APPS = DJANGO_APPS + PROJ_APPS
+INSTALLED_APPS = PROJ_APPS + DJANGO_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
