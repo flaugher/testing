@@ -1,6 +1,6 @@
 import mock
 import unittest
-from .models import get_max_items, get_first_name, get_full_name, get_car_make
+from .models import get_max_items, get_first_name, get_full_name, get_car_make, get_car_wheels
 
 class TestMocks(unittest.TestCase):
 
@@ -41,7 +41,7 @@ class TestMocks(unittest.TestCase):
         # We'll just throw in a test to check it
         self.assertEquals(get_car_make(), 'BMW')
 
-    @mock.patch('testing.mocks.Car.wheels', new_callable=mock.PropertyMock)
+    @mock.patch('mocks.Car.wheels', new_callable=mock.PropertyMock)
     def test_property(self, mock_wheels):
         # howto: mock a class property
         mock_wheels.return_value = 2
@@ -49,5 +49,24 @@ class TestMocks(unittest.TestCase):
         # our mock makes it return 2 instead.
         self.assertEquals(get_car_wheels(), 2)
 
+    @mock.patch('mocks.models.Car')
+    def test_class(self, mock_car):
+        # howto: mock (swap out) an entire class
+        class NewCar(object):
 
+            def get_make(self):
+                return 'Audi'
 
+            @property
+            def wheels(self):
+                return 6
+
+        # key it make return_value an instance of the new class
+        # This has the effect of intercepting calls to the Car class.
+        # However, the only things that are changed in the Car class is
+        # what's specified in the definition above.  get_car_make instantiates
+        # a car instance and then calls get_make.  But we've mocked get_make
+        # above so the function now returns 'Audi'.
+        mock_car.return_value = NewCar()
+        self.assertEquals(get_car_make(), 'Audi')
+        self.assertEquals(get_car_wheels(), 6)
