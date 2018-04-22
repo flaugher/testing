@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 
 PROJ_APPS = [
+    'mocks.apps.MocksConfig',
     'polls.apps.PollsConfig',
     'run.apps.RunConfig',
 ]
