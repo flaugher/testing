@@ -1,6 +1,6 @@
 import mock
 import unittest
-from .models import get_max_items, get_first_name, get_full_name
+from .models import get_max_items, get_first_name, get_full_name, get_car_make
 
 class TestMocks(unittest.TestCase):
 
@@ -22,13 +22,21 @@ class TestMocks(unittest.TestCase):
         self.assertEquals(get_full_name('Robert'), 'Robert Flaugher')
 
     @mock.patch('mocks.models.get_first_name')
-    def test_get_first_name(self, mock_get_first_name):
+    def test_function(self, mock_get_first_name):
         # howto: mock a function
         # This shows how to mock the return value for a function.  You
         # could call the function directly or override whatever it would
         # normally kind of like how you can override factoryboy instances.
-        mock_get_first_name.return_value = 'Bob'
+        mock_get_first_name.return_value = 'Bob'  # Override default
         self.assertEquals(get_full_name('Robert'), 'Bob Flaugher')
+
+    @mock.patch('mocks.models.Car.get_make')
+    def test_method(self, mock_get_make):
+        # howto: mock a class method
+        # This just mocks what an instance method on a class would return
+        mock_get_make.return_value = 'BMW'
+        # We'll just throw in a test to check it
+        self.assertEquals(get_car_make(), 'BMW')
 
 
 
