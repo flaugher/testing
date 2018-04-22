@@ -1,6 +1,6 @@
 import mock
 import unittest
-from .models import get_max_items, get_first_name, get_full_name, get_car_make, get_car_wheels
+from .models import Car, get_max_items, get_first_name, get_full_name, get_car_make, get_car_wheels
 
 class TestMocks(unittest.TestCase):
 
@@ -41,7 +41,7 @@ class TestMocks(unittest.TestCase):
         # We'll just throw in a test to check it
         self.assertEquals(get_car_make(), 'BMW')
 
-    @mock.patch('mocks.Car.wheels', new_callable=mock.PropertyMock)
+    @mock.patch('mocks.models.Car.wheels', new_callable=mock.PropertyMock)
     def test_property(self, mock_wheels):
         # howto: mock a class property
         mock_wheels.return_value = 2
@@ -70,3 +70,18 @@ class TestMocks(unittest.TestCase):
         mock_car.return_value = NewCar()
         self.assertEquals(get_car_make(), 'Audi')
         self.assertEquals(get_car_wheels(), 6)
+
+    @mock.patch('mocks.models.Car.for_make')
+    def test_classmethod(self, mock_for_make):
+        # howto: mock a classmethod
+        # Same as mocking a method.
+        mock_for_make.return_value = 'Lexus'
+        # ...
+
+    @mock.patch('mocks.models.Car.roll_call')
+    def test_staticmethod(self, mock_get_roll_call):
+        # howto: mock a staticmethod
+        # Same as mocking a class method
+        mock_get_roll_call.return_value = [Car('Ford')]
+        # ...
+
