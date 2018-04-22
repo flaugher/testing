@@ -33,7 +33,7 @@ ALLOWED_HOSTS = []
 
 PROJ_APPS = [
     'polls.apps.PollsConfig',
-    'run',
+    'run.apps.RunConfig',
 ]
 
 DJANGO_APPS = [
