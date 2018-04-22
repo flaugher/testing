@@ -21,6 +21,9 @@ class TestMocks(unittest.TestCase):
     def test_get_full_name(self):
         self.assertEquals(get_full_name('Robert'), 'Robert Flaugher')
 
+    # patch "hijacks" the call to get_first_name and returns a MagicMock object.
+    # mock_get_first_name is a MagicMock instance that corresponds to the get_first_name
+    # function.
     @mock.patch('mocks.models.get_first_name')
     def test_function(self, mock_get_first_name):
         # howto: mock a function
@@ -37,6 +40,14 @@ class TestMocks(unittest.TestCase):
         mock_get_make.return_value = 'BMW'
         # We'll just throw in a test to check it
         self.assertEquals(get_car_make(), 'BMW')
+
+    @mock.patch('testing.mocks.Car.wheels', new_callable=mock.PropertyMock)
+    def test_property(self, mock_wheels):
+        # howto: mock a class property
+        mock_wheels.return_value = 2
+        # Normally, get_car_wheels returns 4.  Here we're confirming that
+        # our mock makes it return 2 instead.
+        self.assertEquals(get_car_wheels(), 2)
 
 
 

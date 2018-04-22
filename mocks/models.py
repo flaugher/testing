@@ -19,6 +19,10 @@ def get_car_make(make=None):
         car = Car.for_make(make)
     return car.get_make()
 
+def get_car_wheels():
+    # howto: read a property from a class
+    return Car().wheels
+
 class Car(object):
 
     def __init__(self, make=None):
