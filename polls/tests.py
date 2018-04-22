@@ -1,8 +1,13 @@
 import mock
 import pdb
 import unittest
+from datetime import datetime, date, time
 from django.test import TestCase
+from django.utils import timezone
 from . import views
+
+class TestModels(unittest.TestCase):
+    pass
 
 class TestViews(unittest.TestCase):
     # howto: test the simplest view with a mock request instance

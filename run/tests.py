@@ -58,6 +58,6 @@ class TestModels(unittest.TestCase):
         mock_car = mock.Mock(spec=Car)
         mock_car.make = "Honda"
         mock_car.model = "Civic"
+        # howto: test mock model methods
         self.assertEqual(Car.__str__(mock_car), "Honda Civic")
-        # howto: test mock model method
         self.assertEqual(Car.sound(mock_car), "vrooom!")
