@@ -11,15 +11,21 @@ Also see ~/info/testing/README.md,  ~/info/django2/django_testing.md
 #### Requirements
 
 - Django > 1.11
+- django-nose
 - coverage
 - nose
-- django-nose
+- mock
 
 #### Run tests
 
-Execute run/tests.py: python manage.py test run.tests
+Execute run/tests.py: 
+python manage.py test run.tests
 
-Execute webtest/tests.py: python webtest/tests.py
+Execute webtest/tests.py: 
+python webtest/tests.py
+
+Execute all tests: 
+python manage.py test
 
 #### Notes
 

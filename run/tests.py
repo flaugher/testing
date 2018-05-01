@@ -11,7 +11,7 @@ from .models import Car
 # cd ~/code/django/testing
 # pm test run.tests
 
-class TestViews1(TestCase):
+class TestViews(TestCase):
     # Tests that use Django TestCase
     def setUp(self):
         pass
@@ -22,6 +22,8 @@ class TestViews1(TestCase):
         howto: test that a view does something.
         """
         locale = 'es-mx'
+        # howto: use requestfactory to simulate a request with a session
+        # Use RequestFactory until you learn how to mock a request/response
         request = RequestFactory().post(
             '/locale/', {'locale': locale})
         request.session = {}
@@ -30,8 +32,9 @@ class TestViews1(TestCase):
 
         self.assertEqual(request.session['locale'], locale)
 
-class TestViews2(WebTest):
+class TestViewsWebTest(WebTest):
     # Tests that use WebTest
+    # howto: use webtest to test a view
 
     # CSRF tokens hard to construct with raw POSTs such as what you
     # are doing in the change_locale_post test.  See:
@@ -51,6 +54,26 @@ class TestViews2(WebTest):
         resp = self.app.post(reverse('locale'))
         #pdb.set_trace()
         self.assertEqual(resp.status_int, 200)
+
+# See https://matthewdaly.co.uk/blog/2015/08/02/testing-django-views-in-isolation/
+#class SnippetCreateViewTest(TestCase):
+#    """
+#    Test the snippet create view
+#    """
+#    def setUp(self):
+#        self.user = UserFactory()
+#        self.factory = RequestFactory()
+#    def test_get(self):
+#        """
+#        Test GET requests
+#        """
+#        request = self.factory.get(reverse('snippet_create'))
+#        request.user = self.user
+#        response = SnippetCreateView.as_view()(request)
+#        self.assertEqual(response.status_code, 200)
+#        self.assertEqual(response.context_data['user'], self.user)
+#        self.assertEqual(response.context_data['request'], request)
+
 
 class TestModels(unittest.TestCase):
     # howto: test model with mock (most basic test)
