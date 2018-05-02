@@ -9,8 +9,10 @@ urlpatterns = [
     url(r'^locale/$', views.change_locale, name='locale'),
     # localhost:8000/run/user/1/foo
     url(r'^user/(\d+)/(\w+)/$',
-        views.user,
-        {'template': 'run/user.html'},
-        name='user'),
+        views.user_pos,
+        name='user-pos'),
+    url(r'^user/(?P<uid>\d+)/(?P<uname>\w+)/$',
+        views.user_kw,
+        name='user-kw'),
 ]
 

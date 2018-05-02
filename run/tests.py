@@ -32,6 +32,63 @@ class TestViews(TestCase):
 
         self.assertEqual(request.session['locale'], locale)
 
+    def test_user_pos(self):
+        # howto: test view having positional arguments
+        # Note that you should hardcode the template into the view, not
+        # pass it via the urlpattern's url function.
+        factory = RequestFactory()
+        # I'm not sure there's a way to do a post using the reverse
+        # if you have positional or keyword args.  All examples that use
+        # reverse don't have these args.
+        request = factory.post('user/')
+        #pdb.set_trace()
+        # Pass positional args here
+        response = views.user_pos(request, 1, 'foo')
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_kw(self):
+        # howto: test view having keyword arguments
+        factory = RequestFactory()
+        request = factory.post('user/')
+        response = views.user_kw(request, uid=1, uname='foobar')
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_needing_user_session(self):
+        """
+        # howto: test view needing user and session
+        user = UserFactory()
+        factory = RequestFactory()
+        user_agent = 'Mozilla/5.0'
+        request = factory.get(reverse('create-account'),
+                              HTTP_USER_AGENT=user_agent)
+        # howto: create a test session when using RequestFactory
+        request.session = {'device_type': 'computer',
+                           'screen_width': 800}
+        request.user = user
+        response = create_account(request, 'ext_home_page.html')
+        self.assertEqual(response.status_code, 200)
+        """
+        pass
+
+    def test_post_form_to_view(self):
+        """
+        # howto: post a form to a view
+        user = UserFactory()
+        template = 'ext_home_page.html'
+        factory = RequestFactory()
+        # form fields passed via data parameter
+        request = factory.post(reverse('create-account'),
+                               {'username': 'testuser',
+                                'password1': 'testpass1',
+                                'password2': 'testpass2',
+                                'user_type_cd': settings.COUPLE_CD},
+                               HTTP_USER_AGENT=self.user_agent)
+        request.user = user
+        response = create_account(request, template)
+        self.assertContains(response, 'Passwords must match')
+        """
+        pass
+
 class TestViewsWebTest(WebTest):
     # Tests that use WebTest
     # howto: use webtest to test a view

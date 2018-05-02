@@ -12,8 +12,18 @@ def change_locale(request):
     request.session['locale'] = locale
     return HttpResponse("Ran change_locale")
 
-def user(request, uid, uname, *args, **kwargs):
-    #debug()
-    template = kwargs['template']
-    context = {'uname': uname, 'uid': uid}
-    return render(request, template, context)
+def user_pos(request, uid, uname, *args, **kwargs):
+    """
+    Positional args
+    """
+    context = {'uid': uid, 'uname': uname}
+    return render(request, 'run/user.html', context)
+
+def user_kw(request, *args, **kwargs):
+    """
+    Keyword args
+    """
+    uid = kwargs['uid']
+    uname = kwargs['uname']
+    context = {'uid': uid, 'uname': uname}
+    return render(request, 'run/user.html', context)
