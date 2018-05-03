@@ -1,8 +1,10 @@
 import mock
 import pdb
+from pdb import set_trace as debug
 import unittest
 from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
+from django.utils import six
 from django_webtest import WebTest
 from . import views
 from .models import Car
@@ -40,18 +42,39 @@ class TestViews(TestCase):
         # I'm not sure there's a way to do a post using the reverse
         # if you have positional or keyword args.  All examples that use
         # reverse don't have these args.
-        request = factory.post('user/')
-        #pdb.set_trace()
+        request = factory.post('user')
         # Pass positional args here
-        response = views.user_pos(request, 1, 'foo')
+        response = views.user_posargs(request, 1, 'foo')
         self.assertEqual(response.status_code, 200)
 
     def test_user_kw(self):
         # howto: test view having keyword arguments
         factory = RequestFactory()
-        request = factory.post('user/')
-        response = views.user_kw(request, uid=1, uname='foobar')
+        request = factory.post('user')
+        response = views.user_kwargs(request, uid=1, uname='foobar')
         self.assertEqual(response.status_code, 200)
+
+    def test_post(self):
+        factory = RequestFactory()
+        form_data = {
+            'data1': 'data 1',
+            'data2': 'data 2',
+        }
+        # When POSTing a form, the data arrives in request.POST.
+        request = factory.post('userpost', data=form_data)
+        response = views.user_post(request, uid=1, uname='foobar')
+        self.assertEqual(response.status_code, 200)
+
+    def test_json_view(self):
+        factory = RequestFactory()
+        # If you should want to convert post data to JSON, do json_data = json.dumps(post_data)
+        json_data = '{"lists":[{"list_id":2,"list_name":"Couples to meet","action":"add"},{"list_id":1,"list_name":"Couples we\'ve met","action":"remove"},{"list_id":0,"list_name":"Sexy couples","action":"create"}]}'
+        # When POSTing JSON, the data arrives in request.body.
+        request = factory.post('json_view', data=json_data, content_type='application/json')
+        response = views.json_view(request, uid=1, uname='foobar')
+        if six.PY3:
+            response_content = str(response.content, encoding='utf8')
+        self.assertJSONEqual(response_content, {"status": "200"})
 
     def test_view_needing_user_session(self):
         """
@@ -67,25 +90,6 @@ class TestViews(TestCase):
         request.user = user
         response = create_account(request, 'ext_home_page.html')
         self.assertEqual(response.status_code, 200)
-        """
-        pass
-
-    def test_post_form_to_view(self):
-        """
-        # howto: post a form to a view
-        user = UserFactory()
-        template = 'ext_home_page.html'
-        factory = RequestFactory()
-        # form fields passed via data parameter
-        request = factory.post(reverse('create-account'),
-                               {'username': 'testuser',
-                                'password1': 'testpass1',
-                                'password2': 'testpass2',
-                                'user_type_cd': settings.COUPLE_CD},
-                               HTTP_USER_AGENT=self.user_agent)
-        request.user = user
-        response = create_account(request, template)
-        self.assertContains(response, 'Passwords must match')
         """
         pass
 
@@ -109,7 +113,6 @@ class TestViewsWebTest(WebTest):
     def test_change_locale_post(self):
         locale = 'es-mx'
         resp = self.app.post(reverse('locale'))
-        #pdb.set_trace()
         self.assertEqual(resp.status_int, 200)
 
 # See https://matthewdaly.co.uk/blog/2015/08/02/testing-django-views-in-isolation/
