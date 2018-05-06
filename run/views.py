@@ -12,42 +12,45 @@ def change_locale(request):
     request.session['locale'] = locale
     return HttpResponse("Ran change_locale")
 
-def user_posargs(request, uid, uname, *args, **kwargs):
+def get_view(request, *args, **kwargs):
     """
-    Positional args
+    GET request
+    """
+    context = {}
+    return render(request, 'run/get.html', context)
+
+def posargs_view(request, uid, uname, *args, **kwargs):
+    """
+    POST request with positional args
     """
     context = {'uid': uid, 'uname': uname}
     return render(request, 'run/user.html', context)
 
-def user_kwargs(request, *args, **kwargs):
+def kwargs_view(request, *args, **kwargs):
     """
-    Keyword args
+    POST request with keyword args
     """
-    print("Running user_kwargs")
     uid = kwargs['uid']
     uname = kwargs['uname']
     context = {'uid': uid, 'uname': uname}
     return render(request, 'run/user.html', context)
 
-def user_post(request, *args, **kwargs):
+def post_view(request, *args, **kwargs):
     """
-    POST plus kwargs
+    POST form plus kwargs
     """
-    print("Running user_post")
     uid = kwargs['uid']
     uname = kwargs['uname']
     data1 = request.POST.get('data1', '')
     data2 = request.POST.get('data2', '')
     context = {'uid': uid, 'uname': uname}
-    print(uid, uname, data1, data2)
     return render(request, 'run/user.html', context)
 
 def json_view(request, *args, **kwargs):
     """
-    JSON plus kwargs
+    POST JSON data plus kwargs
     """
     uid = kwargs['uid']
     uname = kwargs['uname']
-    #print("JSON data: " + str(request.body))
     context = {'uid': uid, 'uname': uname}
     return JsonResponse({'status': '200'})

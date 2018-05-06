@@ -14,9 +14,6 @@ from .models import Car
 # pm test run.tests
 
 class TestViews(TestCase):
-    # Tests that use Django TestCase
-    def setUp(self):
-        pass
 
     def test_change_locale_works(self):
         """POST sets 'locale' key in session.
@@ -34,7 +31,14 @@ class TestViews(TestCase):
 
         self.assertEqual(request.session['locale'], locale)
 
-    def test_user_pos(self):
+    def test_get_view(self):
+        # howto: test a get request
+        factory = RequestFactory()
+        request = factory.get('get')
+        response = views.get_view(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_posargs_view(self):
         # howto: test view having positional arguments
         # Note that you should hardcode the template into the view, not
         # pass it via the urlpattern's url function.
@@ -44,17 +48,17 @@ class TestViews(TestCase):
         # reverse don't have these args.
         request = factory.post('user')
         # Pass positional args here
-        response = views.user_posargs(request, 1, 'foo')
+        response = views.posargs_view(request, 1, 'foo')
         self.assertEqual(response.status_code, 200)
 
-    def test_user_kw(self):
+    def test_kwargs_view(self):
         # howto: test view having keyword arguments
         factory = RequestFactory()
         request = factory.post('user')
-        response = views.user_kwargs(request, uid=1, uname='foobar')
+        response = views.kwargs_view(request, uid=1, uname='foobar')
         self.assertEqual(response.status_code, 200)
 
-    def test_post(self):
+    def test_post_view(self):
         factory = RequestFactory()
         form_data = {
             'data1': 'data 1',
@@ -62,7 +66,7 @@ class TestViews(TestCase):
         }
         # When POSTing a form, the data arrives in request.POST.
         request = factory.post('userpost', data=form_data)
-        response = views.user_post(request, uid=1, uname='foobar')
+        response = views.post_view(request, uid=1, uname='foobar')
         self.assertEqual(response.status_code, 200)
 
     def test_json_view(self):

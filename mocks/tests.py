@@ -1,6 +1,9 @@
+from datetime import datetime, timedelta
 import mock
 import unittest
+from unittest.mock import MagicMock as MM
 from .models import Car, get_max_items, get_first_name, get_full_name, get_car_make, get_car_wheels
+from .classes import Book
 
 class TestMocks(unittest.TestCase):
 
@@ -85,3 +88,19 @@ class TestMocks(unittest.TestCase):
         mock_get_roll_call.return_value = [Car('Ford')]
         # ...
 
+    def test_return_value(self):
+        # howto: mock a method's return value
+        book = Book('Python 3')
+        expected = datetime.today().strftime('%Y-%m-%d')
+        actual = book.pub_date()
+        self.assertEqual(actual, expected)
+
+        # Now mock the return value to be yesterday
+        book = Book('Python 3')
+        tomorrow = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+        book.pub_date = MM(return_value=tomorrow)
+        mock_expected = tomorrow
+        actual = book.pub_date()
+        #print("mock expected: " + mock_expected)
+        #print("actual: " + actual)
+        self.assertEqual(actual, mock_expected)
