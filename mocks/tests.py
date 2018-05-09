@@ -1,7 +1,11 @@
-from datetime import datetime, timedelta
+try:  # python3
+    from unittest.mock import patch
+    from unittest.mock import MagicMock as MM
+except ImportError as e:  # python 2
+    from mock import patch
 import mock
+from datetime import datetime, timedelta
 import unittest
-from unittest.mock import MagicMock as MM
 from .models import Car, get_max_items, get_first_name, get_full_name, get_car_make, get_car_wheels
 from .classes import Book
 
