@@ -14,10 +14,12 @@ class TestMocks(unittest.TestCase):
     @mock.patch('mocks.classes.Book.raise_exc')
     def test_exc_raised(self, mock_func):
         # howto: mock an exception to check that it's raised
-        # You want to test to see if a ValueError exception is raised
-        # when the raise_exc function/method is called under whatever
-        # given conditions you specify in your test.
-        mock_func.side_effect = ValueError
+        # This tests to see if a ValueError exception is raised
+        # when the raise_exc function/method is called.
+        # Either of the next two statements works
+        #mock_func.side_effect = ValueError
+        mock_func = MM(side_effect=ValueError("ValueError was raised"))
+        # howto: test that an exception was raised
         self.assertRaises(ValueError, mock_func)
 
     def test_return_value(self):
