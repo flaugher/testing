@@ -11,6 +11,25 @@ from .classes import Book
 
 class TestMocks(unittest.TestCase):
 
+    def test_return_value(self):
+        # howto: mock a class method's return value
+        book = Book('Python 3')
+        expected = datetime.today().strftime('%Y-%m-%d')
+        actual = book.pub_date()
+        self.assertEqual(actual, expected)
+
+        # Now mock the return value to be yesterday
+        book = Book('Python 3')
+        tomorrow = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+        book.pub_date = MM(return_value=tomorrow)
+        mock_expected = tomorrow
+        actual = book.pub_date()
+        self.assertEqual(actual, mock_expected)
+        # howto: test how a mock was called
+        # In this case, in "actual = book.pub_date(), the method pub_date
+        # was called without any arguments and we can test that.
+        book.pub_date.assert_called_with()   # No arguments!
+
     @mock.patch('mocks.models.MAX_ITEMS', 5)
     def test_constant(self):
         # howto: mock a constant
@@ -91,20 +110,3 @@ class TestMocks(unittest.TestCase):
         # Same as mocking a class method
         mock_get_roll_call.return_value = [Car('Ford')]
         # ...
-
-    def test_return_value(self):
-        # howto: mock a method's return value
-        book = Book('Python 3')
-        expected = datetime.today().strftime('%Y-%m-%d')
-        actual = book.pub_date()
-        self.assertEqual(actual, expected)
-
-        # Now mock the return value to be yesterday
-        book = Book('Python 3')
-        tomorrow = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
-        book.pub_date = MM(return_value=tomorrow)
-        mock_expected = tomorrow
-        actual = book.pub_date()
-        #print("mock expected: " + mock_expected)
-        #print("actual: " + actual)
-        self.assertEqual(actual, mock_expected)
