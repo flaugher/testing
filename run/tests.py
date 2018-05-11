@@ -140,6 +140,11 @@ class TestViewsWebTest(WebTest):
 
 
 class TestModels(unittest.TestCase):
+    # howto: test model instance is of a particular type
+    def test_is_car(self):
+        car = Car()
+        self.assertTrue(isinstance(car, Car))
+
     # howto: test model with mock (most basic test)
     def test_car_str(self):
         mock_car = mock.Mock(spec=Car)
