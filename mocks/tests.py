@@ -11,6 +11,15 @@ from .classes import Book
 
 class TestMocks(unittest.TestCase):
 
+    @mock.patch('mocks.classes.Book.raise_exc')
+    def test_exc_raised(self, mock_func):
+        # howto: mock an exception to check that it's raised
+        # You want to test to see if a ValueError exception is raised
+        # when the raise_exc function/method is called under whatever
+        # given conditions you specify in your test.
+        mock_func.side_effect = ValueError
+        self.assertRaises(ValueError, mock_func)
+
     def test_return_value(self):
         # howto: mock a class method's return value
         book = Book('Python 3')
