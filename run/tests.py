@@ -1,17 +1,64 @@
-import mock
+try:  # python3
+    from unittest import mock
+    from unittest.mock import patch
+    from unittest.mock import MagicMock as MM
+except ImportError as e:  # python 2
+    import mock
+    from mock import patch
+import unittest
 import pdb
 from pdb import set_trace as debug
-import unittest
+
 from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
 from django.utils import six
+
 from django_webtest import WebTest
+from .models import Car, Dealer
+from . import functions as func
 from . import views
-from .models import Car
 
 # Run tests:
 # cd ~/code/django/testing
 # pm test run.tests
+
+
+class TestFuncs(unittest.TestCase):
+
+    def test_func_no_mock(self):
+        # howto: test a function without mocks
+        self.assertEqual(func.function(), "You have called function!")
+
+    @mock.patch('run.functions.function')
+    def test_func_with_mock(self, mock_func):
+        # howto: mock the return value of a function
+        #print(mock_func)   # mock_func is a MagicMock
+        mock_func.return_value = "You have called a mocked function!"
+        self.assertEqual(func.function(), "You have called a mocked function!")
+
+class TestModels(unittest.TestCase):
+
+    def test_is_car(self):
+        # howto: test model instance is of a particular type
+        car = Car()
+        self.assertTrue(isinstance(car, Car))
+
+    def test_car_str(self):
+        # howto: test model with mock (most basic test) without patch
+        mock_car = mock.Mock(spec=Car)
+        mock_car.make = "Honda"
+        mock_car.model = "Civic"
+        # howto: test mock model methods
+        self.assertEqual(Car.__str__(mock_car), "Honda Civic")
+        self.assertEqual(Car.sound(mock_car), "vrooom!")
+
+    @mock.patch('run.models.Dealer', autospec=True)
+    def test_dealer(self, mock_dealer):
+        # howto: mock a model using patch decorator
+        mock_dealer.name = "Santa Monica BMW"
+        mock_dealer.city = "Santa Monica"
+        mock_dealer.num_of_cars.return_value = 200
+
 
 class TestViews(TestCase):
 
@@ -137,19 +184,3 @@ class TestViewsWebTest(WebTest):
 #        self.assertEqual(response.status_code, 200)
 #        self.assertEqual(response.context_data['user'], self.user)
 #        self.assertEqual(response.context_data['request'], request)
-
-
-class TestModels(unittest.TestCase):
-    # howto: test model instance is of a particular type
-    def test_is_car(self):
-        car = Car()
-        self.assertTrue(isinstance(car, Car))
-
-    # howto: test model with mock (most basic test)
-    def test_car_str(self):
-        mock_car = mock.Mock(spec=Car)
-        mock_car.make = "Honda"
-        mock_car.model = "Civic"
-        # howto: test mock model methods
-        self.assertEqual(Car.__str__(mock_car), "Honda Civic")
-        self.assertEqual(Car.sound(mock_car), "vrooom!")
