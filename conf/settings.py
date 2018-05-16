@@ -23,7 +23,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'me84-1tb+0_3n+_p#v5a%965n-!l@93soq12#$svvv7-b^pexm'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+TEMPLATE_DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -33,7 +34,6 @@ ALLOWED_HOSTS = []
 
 PROJ_APPS = [
     'mocks.apps.MocksConfig',
-    'polls.apps.PollsConfig',
     'run.apps.RunConfig',
 ]
 

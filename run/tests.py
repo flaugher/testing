@@ -39,9 +39,16 @@ class TestFuncs(unittest.TestCase):
 class TestModels(unittest.TestCase):
 
     def test_is_car(self):
-        # howto: test model instance is of a particular type
-        car = Car()
+        """
+        howto: test creating (crud) an instance of a model
+
+        full_clean() will detect whether or not the model instance is
+        valid.  You should run this test on *all* models.
+        """
+        car = Car(make='Honda', model='Civic')
         self.assertTrue(isinstance(car, Car))
+        self.assertEqual(Car.__str__(car), "Honda Civic")
+        car.full_clean()
 
     def test_car_str(self):
         # howto: test model with mock (most basic test) without patch
