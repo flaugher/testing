@@ -130,9 +130,15 @@ class TestModel(unittest.TestCase):
         self.assertEqual(Car.__str__(mock_car), "Honda Civic")
         self.assertEqual(Car.sound(mock_car), "vrooom!")
 
+    @mock.patch.object('run.models.Dealer', 'slogan', autospec=True)
+    def test_dealer_method(self, mock_slogan):
+        # howto: mock a model method
+        # LEARN HOW TO DO THIS.
+        pass
+
     @mock.patch('run.models.Dealer', autospec=True)
-    def test_dealer(self, mock_dealer):
-        # howto: mock a model using patch decorator
+    def test_dealer_attrs(self, mock_dealer):
+        # howto: mock a model's attributes using patch decorator
         mock_dealer.name = "Santa Monica BMW"
         mock_dealer.city = "Santa Monica"
         mock_dealer.num_of_cars.return_value = 200

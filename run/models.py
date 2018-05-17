@@ -69,5 +69,8 @@ class Dealer(models.Model):
     def num_of_cars(self):
         return 100
 
+    def slogan(self):
+        return "I'm Kal Worthington and this is my dog Spot!"
+
     class Meta:
         db_table = 'dealer'
