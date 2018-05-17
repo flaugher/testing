@@ -51,6 +51,11 @@ class TestExcep(unittest.TestCase):
 
 class TestFuncs(unittest.TestCase):
 
+    def test_logger_func(self):
+        # howto: test logs were written to
+        with self.assertLogs('run.functions', 'INFO'):  # Will run without args
+            func.logger_function()
+
     def test_func_no_mock(self):
         # howto: test a function without mocks
         self.assertEqual(func.function(), "You have called function!")
@@ -74,6 +79,8 @@ class TestModels(unittest.TestCase):
         """
         car = Car(make='Honda', model='Civic')
         self.assertTrue(isinstance(car, Car))
+        # howto: test that an object is an instance of a class
+        self.assertIsInstance(car, Car)
         self.assertEqual(Car.__str__(car), "Honda Civic")
         car.full_clean()
 
@@ -203,10 +210,10 @@ class TestViewsWebTest(WebTest):
 
 
 # howto: skip tests that are expected to fail
-class ExpectedFailureTestCase(unittest.TestCase):
-    @unittest.expectedFailure
-    def test_fail(self):
-        self.assertEqual(1, 0, "broken")
+#class ExpectedFailureTestCase(unittest.TestCase):
+#    @unittest.expectedFailure
+#    def test_fail(self):
+#        self.assertEqual(1, 0, "broken")
 
 
 # howto: skip a class using unittest decorator
