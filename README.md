@@ -11,10 +11,9 @@ Also see ~/info/testing/README.md,  ~/info/django2/django_testing.md
 #### Requirements
 
 - Django > 1.11
-- django-nose
-- coverage
-- nose
+- django-test-without-migrations
 - mock
+- coverage
 
 #### Run tests
 

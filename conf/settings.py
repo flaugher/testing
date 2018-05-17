@@ -45,6 +45,7 @@ DJANGO_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
+    'test_without_migrations',
 ]
 INSTALLED_APPS = PROJ_APPS + DJANGO_APPS
 

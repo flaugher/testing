@@ -43,6 +43,11 @@ class TestExcep(unittest.TestCase):
         with self.assertRaises(ValueError):
             c.raise_exc()
 
+#    @unittest.skip('Demonstrate skipping')
+#    def test_nothing(self):
+#        # howto: skip a test using unittest decorator
+#        self.fail("This shouldn't happen")
+
 
 class TestFuncs(unittest.TestCase):
 
@@ -196,7 +201,17 @@ class TestViewsWebTest(WebTest):
         resp = self.app.post(reverse('locale'))
         self.assertEqual(resp.status_int, 200)
 
+
+# howto: skip tests that are expected to fail
+class ExpectedFailureTestCase(unittest.TestCase):
+    @unittest.expectedFailure
+    def test_fail(self):
+        self.assertEqual(1, 0, "broken")
+
+
+# howto: skip a class using unittest decorator
 # See https://matthewdaly.co.uk/blog/2015/08/02/testing-django-views-in-isolation/
+#@unittest.skip('Skip entire class')
 #class SnippetCreateViewTest(TestCase):
 #    """
 #    Test the snippet create view
