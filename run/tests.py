@@ -17,10 +17,31 @@ from django_webtest import WebTest
 from .models import Car, Dealer
 from . import functions as func
 from . import views
+from . import classes as cls
 
 # Run tests:
 # cd ~/code/django/testing
 # pm test run.tests
+
+
+class TestExcep(unittest.TestCase):
+
+    @mock.patch('run.classes.Exceptioner.raise_exc')
+    def test_mock_exc_raised(self, mock_func):
+        # howto: mock an exception to check that it's raised
+        # This tests to see if a ValueError exception is raised
+        # when the raise_exc function/method is called.
+        # Either of the next two statements works
+        #mock_func.side_effect = ValueError
+        mock_func = MM(side_effect=ValueError("ValueError was raised"))
+        # howto: test that an exception was raised
+        self.assertRaises(ValueError, mock_func)
+
+    def test_real_exc_raised(self):
+        # howto: test that an exception is raised (using context manager)
+        c = cls.Exceptioner()
+        with self.assertRaises(ValueError):
+            c.raise_exc()
 
 
 class TestFuncs(unittest.TestCase):
@@ -35,6 +56,7 @@ class TestFuncs(unittest.TestCase):
         #print(mock_func)   # mock_func is a MagicMock
         mock_func.return_value = "You have called a mocked function!"
         self.assertEqual(func.function(), "You have called a mocked function!")
+
 
 class TestModels(unittest.TestCase):
 
@@ -150,6 +172,7 @@ class TestViews(TestCase):
         self.assertEqual(response.status_code, 200)
         """
         pass
+
 
 class TestViewsWebTest(WebTest):
     # Tests that use WebTest

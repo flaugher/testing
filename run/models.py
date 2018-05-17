@@ -15,6 +15,7 @@ class Author(models.Model):
     class Meta:
         db_table = 'author'
 
+
 class Book(models.Model):
     title = models.CharField(max_length=100)
     author = models.ForeignKey(Author)
@@ -24,6 +25,7 @@ class Book(models.Model):
 
     class Meta:
         db_table = 'book'
+
 
 class Publisher(models.Model):
     """
@@ -43,8 +45,6 @@ class Publisher(models.Model):
         db_table = 'publisher'
 
 
-
-
 class Car(models.Model):
     make = models.CharField(max_length=50)
     model = models.CharField(max_length=50)
@@ -57,6 +57,7 @@ class Car(models.Model):
 
     class Meta:
         db_table = 'car'
+
 
 class Dealer(models.Model):
     name = models.CharField(max_length=50)
