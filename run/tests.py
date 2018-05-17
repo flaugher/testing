@@ -9,6 +9,7 @@ import unittest
 import pdb
 from pdb import set_trace as debug
 
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
 from django.utils import six
@@ -22,6 +23,8 @@ from . import classes as cls
 # Run tests:
 # cd ~/code/django/testing
 # pm test run.tests
+
+# Python assertions: https://docs.python.org/3/library/unittest.html#test-cases
 
 
 class TestExcep(unittest.TestCase):
@@ -48,8 +51,33 @@ class TestExcep(unittest.TestCase):
 #        # howto: skip a test using unittest decorator
 #        self.fail("This shouldn't happen")
 
+class TestClass(unittest.TestCase):
 
-class TestFuncs(unittest.TestCase):
+    #@mock.patch('run.classes.Class1', autospec=True)
+    #def test_mock_magic(self, mock_class):
+    def test_mock_magic(self):
+        # howto: mock a magic method TBD
+        # Test default str
+        self.assertEqual(cls.Class1.__str__(self), "I am class 1!")
+
+    @mock.patch('run.classes.Class2')
+    @mock.patch('run.classes.Class1')
+    def test_classes(self, mock_class1, mock_class2):
+        # howto: mock more than one object
+        # howto: show that mocked object was called
+        cls.Class1()
+        cls.Class2()
+        #assert mock_class1 is cls.Class1
+        #assert mock_class2 is cls.Class2
+        #assert mock_class1.called
+        #assert mock_class2.called
+        self.assertIs(mock_class1, cls.Class1)
+        self.assertIs(mock_class2, cls.Class2)
+        self.assertTrue(mock_class1.called)
+        self.assertTrue(mock_class2.called)
+
+
+class TestFunc(unittest.TestCase):
 
     def test_logger_func(self):
         # howto: test logs were written to
@@ -68,7 +96,16 @@ class TestFuncs(unittest.TestCase):
         self.assertEqual(func.function(), "You have called a mocked function!")
 
 
-class TestModels(unittest.TestCase):
+class TestModel(unittest.TestCase):
+
+    @mock.patch('django.contrib.auth.models.User', autospec=True)
+    def test_user(self, mock_user):
+        # howto: mock a user
+        mock_user.username = 'robert'
+        mock_user.email = 'robert@example.com'
+        self.assertEqual(mock_user.username, 'robert')
+        mock_user.get_username.return_value = 'bob'
+        self.assertEqual(mock_user.get_username(), 'bob')
 
     def test_is_car(self):
         """
@@ -101,7 +138,7 @@ class TestModels(unittest.TestCase):
         mock_dealer.num_of_cars.return_value = 200
 
 
-class TestViews(TestCase):
+class TestView(TestCase):
 
     def test_change_locale_works(self):
         """POST sets 'locale' key in session.
