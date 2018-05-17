@@ -130,8 +130,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(Car.__str__(mock_car), "Honda Civic")
         self.assertEqual(Car.sound(mock_car), "vrooom!")
 
-    @mock.patch.object('run.models.Dealer', 'slogan', autospec=True)
-    def test_dealer_method(self, mock_slogan):
+    def test_dealer_method(self):
         # howto: mock a model method
         # LEARN HOW TO DO THIS.
         pass
