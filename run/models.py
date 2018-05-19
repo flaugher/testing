@@ -52,11 +52,11 @@ class Car(models.Model):
     def __str__(self):
         return '%s %s' % (self.make, self.model)
 
-    def sound(self):
-        return "vrooom!"
-
     class Meta:
         db_table = 'car'
+
+    def sound(self):
+        return "vrooom!"
 
 
 class Dealer(models.Model):

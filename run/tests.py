@@ -63,8 +63,8 @@ class TestClass(unittest.TestCase):
     @mock.patch('run.classes.Class2')
     @mock.patch('run.classes.Class1')
     def test_classes(self, mock_class1, mock_class2):
-        # howto: mock more than one object
-        # howto: show that mocked object was called
+        # howto: mock more than one class object
+        # howto: show that mocked class object was called
         cls.Class1()
         cls.Class2()
         #assert mock_class1 is cls.Class1
@@ -94,6 +94,20 @@ class TestFunc(unittest.TestCase):
         #print(mock_func)   # mock_func is a MagicMock
         mock_func.return_value = "You have called a mocked function!"
         self.assertEqual(func.function(), "You have called a mocked function!")
+
+    @unittest.expectedFailure
+    @mock.patch('run.models.Car', autospec=True)
+    def test_func_that_requires_an_object(self, mock_car):
+        """
+        howto: test a function that requires a model or class instance
+
+        Post SO question asking why this doesn't work!
+        Src: http://blog.celerity.com/unit-testing-django-fake-it-til-you-make-it
+        """
+        mock_car.objects.get = mock.Mock(side_effect=Car.DoesNotExist)
+        self.assertTrue(func.get_car(1))
+        mock_car.objects.get = mock.Mock(return_value=False)
+        self.assertFalse(func.get_car(1))
 
 
 class TestModel(unittest.TestCase):
@@ -153,22 +167,6 @@ class TestModel(unittest.TestCase):
 
 class TestView(TestCase):
 
-    def test_change_locale_works(self):
-        """POST sets 'locale' key in session.
-
-        howto: test that a view does something.
-        """
-        locale = 'es-mx'
-        # howto: use requestfactory to simulate a request with a session
-        # Use RequestFactory until you learn how to mock a request/response
-        request = RequestFactory().post(
-            '/locale/', {'locale': locale})
-        request.session = {}
-
-        views.change_locale(request)
-
-        self.assertEqual(request.session['locale'], locale)
-
     def test_get_view(self):
         # howto: test a get request
         factory = RequestFactory()
@@ -207,20 +205,25 @@ class TestView(TestCase):
         response = views.post_view(request, uid=1, uname='foobar')
         self.assertEqual(response.status_code, 200)
 
-    def test_json_view(self):
-        factory = RequestFactory()
-        # If you should want to convert post data to JSON, do json_data = json.dumps(post_data)
-        json_data = '{"lists":[{"list_id":2,"list_name":"Couples to meet","action":"add"},{"list_id":1,"list_name":"Couples we\'ve met","action":"remove"},{"list_id":0,"list_name":"Sexy couples","action":"create"}]}'
-        # When POSTing JSON, the data arrives in request.body.
-        request = factory.post('json_view', data=json_data, content_type='application/json')
-        response = views.json_view(request, uid=1, uname='foobar')
-        if six.PY3:
-            response_content = str(response.content, encoding='utf8')
-        self.assertJSONEqual(response_content, {"status": "200"})
+    def test_mock_view_needing_user_session(self):
+        """
+        # howto: test a view requiring a user and session using a mock
+        mock_request = mock.Mock()
+        mock_request.user = mock.Mock()
+        mock_request.user.is_superuser = mock.Mock()
+        mock_request.user.is_superuser.return_value = True
+        mock_request.session = {}
+        ...
+        response = some_view(mock_request)
+        self.assertEqual(response.status_code, 200)
+
+        This way is easier than using Request and User factories as shown next.
+        """
+        pass
 
     def test_view_needing_user_session(self):
         """
-        # howto: test view needing user and session
+        # howto: test a view requiring a user and session using RequestFactory
         user = UserFactory()
         factory = RequestFactory()
         user_agent = 'Mozilla/5.0'
@@ -234,6 +237,32 @@ class TestView(TestCase):
         self.assertEqual(response.status_code, 200)
         """
         pass
+
+    def test_change_locale_works(self):
+        """
+        howto: test that a view does something.
+
+        POST sets 'locale' key in session.
+        """
+        locale = 'es-mx'
+        # howto: use requestfactory to simulate a request with a session
+        # Use RequestFactory until you learn how to mock a request/response
+        request = RequestFactory().post(
+            '/locale/', {'locale': locale})
+        request.session = {}
+        views.change_locale(request)
+        self.assertEqual(request.session['locale'], locale)
+
+    def test_json_view(self):
+        factory = RequestFactory()
+        # If you should want to convert post data to JSON, do json_data = json.dumps(post_data)
+        json_data = '{"lists":[{"list_id":2,"list_name":"Couples to meet","action":"add"},{"list_id":1,"list_name":"Couples we\'ve met","action":"remove"},{"list_id":0,"list_name":"Sexy couples","action":"create"}]}'
+        # When POSTing JSON, the data arrives in request.body.
+        request = factory.post('json_view', data=json_data, content_type='application/json')
+        response = views.json_view(request, uid=1, uname='foobar')
+        if six.PY3:
+            response_content = str(response.content, encoding='utf8')
+        self.assertJSONEqual(response_content, {"status": "200"})
 
 
 class TestViewsWebTest(WebTest):
