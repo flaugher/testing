@@ -107,22 +107,30 @@ class TestModel(unittest.TestCase):
         mock_user.get_username.return_value = 'bob'
         self.assertEqual(mock_user.get_username(), 'bob')
 
-    def test_is_car(self):
+    def test_create_car(self):
         """
-        howto: test creating (crud) an instance of a model
+        howto: test crud: test creating an instance of a model
+        howto: test that an object is an instance of a class
 
-        full_clean() will detect whether or not the model instance is
-        valid.  You should run this test on *all* models.
+        You should run this test on every model!
         """
         car = Car(make='Honda', model='Civic')
-        self.assertTrue(isinstance(car, Car))
-        # howto: test that an object is an instance of a class
         self.assertIsInstance(car, Car)
-        self.assertEqual(Car.__str__(car), "Honda Civic")
-        car.full_clean()
 
-    def test_car_str(self):
-        # howto: test model with mock (most basic test) without patch
+        # Optional:
+        #self.assertEqual(Car.__str__(car), "Honda Civic")
+
+        # full_clean() will detect whether or not the model instance is valid.
+        # But it isn't needed.  Instantiating a model as shown above is sufficient.
+        #car.full_clean()
+
+    def test_create_car_mock(self):
+        """
+        howto: test crud: create an instance of a model using a mock
+
+        This is equivalent to test_create_car, just an alternate way to
+        do it.  "spec" ensures that changes to Car will be caught.
+        """
         mock_car = mock.Mock(spec=Car)
         mock_car.make = "Honda"
         mock_car.model = "Civic"
