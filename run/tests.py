@@ -95,19 +95,25 @@ class TestFunc(unittest.TestCase):
         mock_func.return_value = "You have called a mocked function!"
         self.assertEqual(func.function(), "You have called a mocked function!")
 
-    @unittest.expectedFailure
+    #@unittest.expectedFailure
     @mock.patch('run.models.Car', autospec=True)
-    def test_func_that_requires_an_object(self, mock_car):
+    def test_function_gets_object(self, mock_car):
         """
-        howto: test a function that requires a model or class instance
+        howto: test a function that retrieves a model or class instance
 
-        Post SO question asking why this doesn't work!
-        Src: http://blog.celerity.com/unit-testing-django-fake-it-til-you-make-it
+        This is an integration test since it touches the database.
         """
+        # Test exception
+        id = 1
         mock_car.objects.get = mock.Mock(side_effect=Car.DoesNotExist)
-        self.assertTrue(func.get_car(1))
-        mock_car.objects.get = mock.Mock(return_value=False)
-        self.assertFalse(func.get_car(1))
+        self.assertIsNone(func.get_car(id))
+        # Test success
+        c = Car(make="Honda", model="Civic")
+        c.save()
+        c = Car.objects.get(make="Honda", model="Civic")
+        self.assertIsInstance(c, Car)
+        self.assertEqual(c.make, "Honda")
+        self.assertEqual(c.model, "Civic")
 
 
 class TestModel(unittest.TestCase):

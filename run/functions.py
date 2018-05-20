@@ -18,9 +18,7 @@ def logger_function():
 def get_car(id):
     """Get car by ID."""
     try:
-        Car.objects.get(pk=id)
+        c = Car.objects.get(pk=id)
     except Car.DoesNotExist:
-        #return True
         return None
-    #return False
-    return id
+    return c
