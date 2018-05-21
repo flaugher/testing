@@ -8,6 +8,7 @@ except ImportError as e:  # python 2
 import unittest
 import pdb
 from pdb import set_trace as debug
+import requests
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -26,6 +27,29 @@ from . import classes as cls
 
 # Python assertions: https://docs.python.org/3/library/unittest.html#test-cases
 
+
+class TestApi(unittest.TestCase):
+
+    def fetch_repo_names(username):
+        url = ('https://api.github.com/users/{}'
+               '/repos'.format(username))
+        repos = requests.get(url).json()
+        return [repo['name'] for repo in repos]
+
+    @mock.patch('requests.get')
+    def test_get_repo_names(self, mock_get):
+        """howto: mock an api.
+
+        This test patches the requests.get function which is called by
+        fetch_repo_names with a mock value.
+        """
+        mock_get.return_value.json.return_value = [
+            {"name": "first"},
+            {"name": "second"}]
+
+        expected_names = ['first', 'second']
+        returned_names = TestApi.fetch_repo_names('joesmith')
+        self.assertEqual(expected_names, returned_names)
 
 class TestExcep(unittest.TestCase):
 
