@@ -28,223 +28,6 @@ from . import classes as cls
 # Python assertions: https://docs.python.org/3/library/unittest.html#test-cases
 
 
-class TestApi(unittest.TestCase):
-
-    def fetch_repo_names(url, username):
-        """Fetch repo names.
-
-        Called from test below.
-        """
-        repos = requests.get(url).json()
-        return [repo['name'] for repo in repos]
-
-    @mock.patch('requests.get')
-    def test_mock_api(self, mock_get):
-        """howto: mock an api.
-
-        This test patches the requests.get function which is called by
-        fetch_repo_names with a mock value.
-        """
-        mock_get.return_value.json.return_value = [
-            {"name": "first"},
-            {"name": "second"}]
-
-        username = 'johndoe'
-        url = ('https://api.github.com/users/{}'
-               '/repos'.format(username))
-        expected_names = ['first', 'second']
-        returned_names = TestApi.fetch_repo_names(url, username)
-        self.assertEqual(expected_names, returned_names)
-        mock_get.assert_called_once_with(url)
-
-class TestExcep(unittest.TestCase):
-
-    @mock.patch('run.classes.Exceptioner.raise_exc')
-    def test_mock_exc_raised(self, mock_func):
-        # howto: mock an exception to check that it's raised
-        # This tests to see if a ValueError exception is raised
-        # when the raise_exc function/method is called.
-        # Either of the next two statements works
-        #mock_func.side_effect = ValueError
-        mock_func = MM(side_effect=ValueError("ValueError was raised"))
-        # howto: test that an exception was raised
-        self.assertRaises(ValueError, mock_func)
-
-    def test_real_exc_raised(self):
-        # howto: test that an exception is raised (using context manager)
-        c = cls.Exceptioner()
-        with self.assertRaises(ValueError):
-            c.raise_exc()
-
-class TestClass(unittest.TestCase):
-
-    # The @mock.patch decorator passes a MagicMock object that replaces
-    # the class you are mocking into the function it is decorating.
-    # The MM object is assigned to the argument 'mock_class'.
-    @mock.patch('run.classes.SimpleClass', autospec=True)
-    def test_mock_class(self, mock_class):
-        """
-        howto: test a mock class
-        howto: test a mock class instance method
-        """
-        # Show the class has been replaced by the mock (ids are equal)
-        #print(mock_class)
-        #print(cls.SimpleClass)
-        self.assertIs(mock_class, cls.SimpleClass)
-        # Create an instance of the mocked SimpleClass
-        inst = cls.SimpleClass()
-        # Show calling the class results in a new mock
-        #print(inst)
-
-        # Show return value of mock instance is same as return value of class
-        # Note that the return value of the inital mock you created is the
-        # same as the mock 'inst' variable that was created when you instantiated
-        # the mocked class.
-        self.assertIs(inst, mock_class.return_value)
-        # Now let's change the return value of explode which is an instance
-        # method:
-        mock_class.return_value.explode.return_value = 'ka-blooey!'
-        # Note that in the command above, mock_class.return_value returns
-        # the MM object that represents an instance of SimpleClass so
-        # mock_class.return_value.explode returns a new MM object that
-        # represents the explode method of that SimpleClass instance.
-        # Therefore, mock_class.return_value.explode.return_value sets
-        # The return value of the mocked explode method of that mocked
-        # class instance.
-
-        # Now continuing, create an instance of the mocked class
-        inst = cls.SimpleClass()
-        # Call the instance method
-        result = inst.explode()
-        #print(result)
-        self.assertEqual(result, 'ka-blooey!')
-
-    @mock.patch('run.classes.SimpleClass.yell')
-    def test_mock_class_method(self, mock_class_method):
-        """
-        howto: mock a class method
-
-        Note that you're not setting autospec=True.  Therefore, if
-        you change yell by adding a parameter, this test will still
-        pass.
-        """
-        mock_class_method.return_value = 'fuck you all to hell!'
-        inst = cls.SimpleClass()
-        result = inst.yell()
-        self.assertEqual(result, 'fuck you all to hell!')
-
-    def test_plain_class(self):
-        """
-        howto: test a class without mocks
-        """
-        self.assertEqual(func.use_simple_class(), "kaboom!")
-
-    def test_class_string(self):
-        # howto: test a class default string
-        self.assertEqual(cls.Class1.__str__(self), "I am class 1!")
-
-    @mock.patch('run.classes.Class2')
-    @mock.patch('run.classes.Class1')
-    def test_classes(self, mock_class1, mock_class2):
-        # howto: mock more than one class object
-        # howto: show that mocked class object was called
-        cls.Class1()
-        cls.Class2()
-        self.assertIs(mock_class1, cls.Class1)
-        self.assertIs(mock_class2, cls.Class2)
-        self.assertTrue(mock_class1.called)
-        self.assertTrue(mock_class2.called)
-
-
-class TestFunc(unittest.TestCase):
-
-    def test_send_mail(self):
-        """
-        howto: send testing mail using monkey patching
-        """
-        def fake_send_mail(subject='foo', body='baz', from_email='jeek', to_list='[]'):
-            self.subject = subject
-            self.body = body
-            self.from_email = from_email
-            self.send_mail_called = True
-
-        self.send_mail_called = False
-        # Replace Python's send_mail with your fake version and use the
-        # latter for testing
-        func.send_mail = fake_send_mail
-        func.send_mail()
-        self.assertTrue(self.send_mail_called)
-
-    def test_logger(self):
-        """
-        howto: test logs were written to
-        """
-        with self.assertLogs('run.functions', 'INFO'):  # Will run without args
-            func.logger_function()
-
-    @mock.patch('run.functions.function')
-    def test_func_with_mock(self, mock_func):
-        """
-        howto: mock the return value of a function
-        """
-        mock_func.return_value = "You have called a mocked function!"
-        self.assertEqual(func.function(), "You have called a mocked function!")
-
-    def test_func_without_mock(self):
-        """
-        howto: test a function without mocks
-        """
-        self.assertEqual(func.function(), "You have called function!")
-
-    @mock.patch('run.functions.function')
-    def test_func_with_side_effect(self, mock_func):
-        """
-        howto: mock a side effect
-        """
-        mock_func.side_effect = func.side_effect_function
-        self.assertEqual(func.function(), "You've called the side effect function!")
-
-    #@unittest.skip('')
-    @mock.patch('run.functions.function')
-    def test_use_function(self, mock_func):
-        """
-        Show that the function is being mocked
-        """
-        # Show mock
-        #print(mock_func)
-        # Show function has been mocked
-        #print(func.function)
-        # Show calling the function returns a mock
-        # Here, we're calling the mock which returns a different mock.
-        # Since MagicMock implements __call__, we can call a MM.
-        # This is a child mock of the func.function() mock.
-        # See http://bit.ly/2x4P7a5
-        #print(func.function())
-        self.assertIs(func.function, mock_func)
-        self.assertIsNot(func.function, func.function())
-
-    @unittest.skip('')
-    #@unittest.expectedFailure
-    @mock.patch('run.models.Car', autospec=True)
-    def test_function_gets_object(self, mock_car):
-        """
-        howto: test a function that retrieves a model or class instance
-
-        This is an integration test since it touches the database.
-        """
-        # Test exception
-        id = 1
-        mock_car.objects.get = mock.Mock(side_effect=Car.DoesNotExist)
-        self.assertIsNone(func.get_car(id))
-        # Test success
-        c = Car(make="Honda", model="Civic")
-        c.save()
-        c = Car.objects.get(make="Honda", model="Civic")
-        self.assertIsInstance(c, Car)
-        self.assertEqual(c.make, "Honda")
-        self.assertEqual(c.model, "Civic")
-
-
 class TestModel(unittest.TestCase):
 
     @mock.patch('django.contrib.auth.models.User', autospec=True)
@@ -395,6 +178,224 @@ class TestView(TestCase):
         if six.PY3:
             response_content = str(response.content, encoding='utf8')
         self.assertJSONEqual(response_content, {"status": "200"})
+
+
+class TestFunc(unittest.TestCase):
+
+    def test_send_mail(self):
+        """
+        howto: send testing mail using monkey patching
+        """
+        def fake_send_mail(subject='foo', body='baz', from_email='jeek', to_list='[]'):
+            self.subject = subject
+            self.body = body
+            self.from_email = from_email
+            self.send_mail_called = True
+
+        self.send_mail_called = False
+        # Replace Python's send_mail with your fake version and use the
+        # latter for testing
+        func.send_mail = fake_send_mail
+        func.send_mail()
+        self.assertTrue(self.send_mail_called)
+
+    def test_logger(self):
+        """
+        howto: test logs were written to
+        """
+        with self.assertLogs('run.functions', 'INFO'):  # Will run without args
+            func.logger_function()
+
+    @mock.patch('run.functions.function')
+    def test_func_with_mock(self, mock_func):
+        """
+        howto: mock the return value of a function
+        """
+        mock_func.return_value = "You have called a mocked function!"
+        self.assertEqual(func.function(), "You have called a mocked function!")
+
+    def test_func_without_mock(self):
+        """
+        howto: test a function without mocks
+        """
+        self.assertEqual(func.function(), "You have called function!")
+
+    @mock.patch('run.functions.function')
+    def test_func_with_side_effect(self, mock_func):
+        """
+        howto: mock a side effect
+        """
+        mock_func.side_effect = func.side_effect_function
+        self.assertEqual(func.function(), "You've called the side effect function!")
+
+    #@unittest.skip('')
+    @mock.patch('run.functions.function')
+    def test_use_function(self, mock_func):
+        """
+        Show that the function is being mocked
+        """
+        # Show mock
+        #print(mock_func)
+        # Show function has been mocked
+        #print(func.function)
+        # Show calling the function returns a mock
+        # Here, we're calling the mock which returns a different mock.
+        # Since MagicMock implements __call__, we can call a MM.
+        # This is a child mock of the func.function() mock.
+        # See http://bit.ly/2x4P7a5
+        #print(func.function())
+        self.assertIs(func.function, mock_func)
+        self.assertIsNot(func.function, func.function())
+
+    @unittest.skip('')
+    #@unittest.expectedFailure
+    @mock.patch('run.models.Car', autospec=True)
+    def test_function_gets_object(self, mock_car):
+        """
+        howto: test a function that retrieves a model or class instance
+
+        This is an integration test since it touches the database.
+        """
+        # Test exception
+        id = 1
+        mock_car.objects.get = mock.Mock(side_effect=Car.DoesNotExist)
+        self.assertIsNone(func.get_car(id))
+        # Test success
+        c = Car(make="Honda", model="Civic")
+        c.save()
+        c = Car.objects.get(make="Honda", model="Civic")
+        self.assertIsInstance(c, Car)
+        self.assertEqual(c.make, "Honda")
+        self.assertEqual(c.model, "Civic")
+
+
+class TestClass(unittest.TestCase):
+
+    # The @mock.patch decorator passes a MagicMock object that replaces
+    # the class you are mocking into the function it is decorating.
+    # The MM object is assigned to the argument 'mock_class'.
+    @mock.patch('run.classes.SimpleClass', autospec=True)
+    def test_mock_class(self, mock_class):
+        """
+        howto: test a mock class
+        howto: test a mock class instance method
+        """
+        # Show the class has been replaced by the mock (ids are equal)
+        #print(mock_class)
+        #print(cls.SimpleClass)
+        self.assertIs(mock_class, cls.SimpleClass)
+        # Create an instance of the mocked SimpleClass
+        inst = cls.SimpleClass()
+        # Show calling the class results in a new mock
+        #print(inst)
+
+        # Show return value of mock instance is same as return value of class
+        # Note that the return value of the inital mock you created is the
+        # same as the mock 'inst' variable that was created when you instantiated
+        # the mocked class.
+        self.assertIs(inst, mock_class.return_value)
+        # Now let's change the return value of explode which is an instance
+        # method:
+        mock_class.return_value.explode.return_value = 'ka-blooey!'
+        # Note that in the command above, mock_class.return_value returns
+        # the MM object that represents an instance of SimpleClass so
+        # mock_class.return_value.explode returns a new MM object that
+        # represents the explode method of that SimpleClass instance.
+        # Therefore, mock_class.return_value.explode.return_value sets
+        # The return value of the mocked explode method of that mocked
+        # class instance.
+
+        # Now continuing, create an instance of the mocked class
+        inst = cls.SimpleClass()
+        # Call the instance method
+        result = inst.explode()
+        #print(result)
+        self.assertEqual(result, 'ka-blooey!')
+
+    @mock.patch('run.classes.SimpleClass.yell')
+    def test_mock_class_method(self, mock_class_method):
+        """
+        howto: mock a class method
+
+        Note that you're not setting autospec=True.  Therefore, if
+        you change yell by adding a parameter, this test will still
+        pass.
+        """
+        mock_class_method.return_value = 'fuck you all to hell!'
+        inst = cls.SimpleClass()
+        result = inst.yell()
+        self.assertEqual(result, 'fuck you all to hell!')
+
+    def test_plain_class(self):
+        """
+        howto: test a class without mocks
+        """
+        self.assertEqual(func.use_simple_class(), "kaboom!")
+
+    def test_class_string(self):
+        # howto: test a class default string
+        self.assertEqual(cls.Class1.__str__(self), "I am class 1!")
+
+    @mock.patch('run.classes.Class2')
+    @mock.patch('run.classes.Class1')
+    def test_classes(self, mock_class1, mock_class2):
+        # howto: mock more than one class object
+        # howto: show that mocked class object was called
+        cls.Class1()
+        cls.Class2()
+        self.assertIs(mock_class1, cls.Class1)
+        self.assertIs(mock_class2, cls.Class2)
+        self.assertTrue(mock_class1.called)
+        self.assertTrue(mock_class2.called)
+
+
+class TestApi(unittest.TestCase):
+
+    def fetch_repo_names(url, username):
+        """Fetch repo names.
+
+        Called from test below.
+        """
+        repos = requests.get(url).json()
+        return [repo['name'] for repo in repos]
+
+    @mock.patch('requests.get')
+    def test_mock_api(self, mock_get):
+        """howto: mock an api.
+
+        This test patches the requests.get function which is called by
+        fetch_repo_names with a mock value.
+        """
+        mock_get.return_value.json.return_value = [
+            {"name": "first"},
+            {"name": "second"}]
+
+        username = 'johndoe'
+        url = ('https://api.github.com/users/{}'
+               '/repos'.format(username))
+        expected_names = ['first', 'second']
+        returned_names = TestApi.fetch_repo_names(url, username)
+        self.assertEqual(expected_names, returned_names)
+        mock_get.assert_called_once_with(url)
+
+class TestExcep(unittest.TestCase):
+
+    @mock.patch('run.classes.Exceptioner.raise_exc')
+    def test_mock_exc_raised(self, mock_func):
+        # howto: mock an exception to check that it's raised
+        # This tests to see if a ValueError exception is raised
+        # when the raise_exc function/method is called.
+        # Either of the next two statements works
+        #mock_func.side_effect = ValueError
+        mock_func = MM(side_effect=ValueError("ValueError was raised"))
+        # howto: test that an exception was raised
+        self.assertRaises(ValueError, mock_func)
+
+    def test_real_exc_raised(self):
+        # howto: test that an exception is raised (using context manager)
+        c = cls.Exceptioner()
+        with self.assertRaises(ValueError):
+            c.raise_exc()
 
 
 class TestViewUsingWebTest(WebTest):
