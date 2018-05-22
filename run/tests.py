@@ -16,7 +16,7 @@ from django.test import TestCase, RequestFactory
 from django.utils import six
 
 from django_webtest import WebTest
-from .models import Car, Dealer
+from .models import Car, Dealer, Author, Book, Publisher
 from . import functions as func
 from . import views
 from . import classes as cls
@@ -30,14 +30,16 @@ from . import classes as cls
 
 class TestApi(unittest.TestCase):
 
-    def fetch_repo_names(username):
-        url = ('https://api.github.com/users/{}'
-               '/repos'.format(username))
+    def fetch_repo_names(url, username):
+        """Fetch repo names.
+
+        Called from test below.
+        """
         repos = requests.get(url).json()
         return [repo['name'] for repo in repos]
 
     @mock.patch('requests.get')
-    def test_get_repo_names(self, mock_get):
+    def test_mock_api(self, mock_get):
         """howto: mock an api.
 
         This test patches the requests.get function which is called by
@@ -47,9 +49,13 @@ class TestApi(unittest.TestCase):
             {"name": "first"},
             {"name": "second"}]
 
+        username = 'johndoe'
+        url = ('https://api.github.com/users/{}'
+               '/repos'.format(username))
         expected_names = ['first', 'second']
-        returned_names = TestApi.fetch_repo_names('joesmith')
+        returned_names = TestApi.fetch_repo_names(url, username)
         self.assertEqual(expected_names, returned_names)
+        mock_get.assert_called_once_with(url)
 
 class TestExcep(unittest.TestCase):
 
@@ -70,18 +76,71 @@ class TestExcep(unittest.TestCase):
         with self.assertRaises(ValueError):
             c.raise_exc()
 
-#    @unittest.skip('Demonstrate skipping')
-#    def test_nothing(self):
-#        # howto: skip a test using unittest decorator
-#        self.fail("This shouldn't happen")
-
 class TestClass(unittest.TestCase):
 
-    #@mock.patch('run.classes.Class1', autospec=True)
-    #def test_mock_magic(self, mock_class):
-    def test_mock_magic(self):
-        # howto: mock a magic method TBD
-        # Test default str
+    # The @mock.patch decorator passes a MagicMock object that replaces
+    # the class you are mocking into the function it is decorating.
+    # The MM object is assigned to the argument 'mock_class'.
+    @mock.patch('run.classes.SimpleClass', autospec=True)
+    def test_mock_class(self, mock_class):
+        """
+        howto: test a mock class
+        howto: test a mock class instance method
+        """
+        # Show the class has been replaced by the mock (ids are equal)
+        #print(mock_class)
+        #print(cls.SimpleClass)
+        self.assertIs(mock_class, cls.SimpleClass)
+        # Create an instance of the mocked SimpleClass
+        inst = cls.SimpleClass()
+        # Show calling the class results in a new mock
+        #print(inst)
+
+        # Show return value of mock instance is same as return value of class
+        # Note that the return value of the inital mock you created is the
+        # same as the mock 'inst' variable that was created when you instantiated
+        # the mocked class.
+        self.assertIs(inst, mock_class.return_value)
+        # Now let's change the return value of explode which is an instance
+        # method:
+        mock_class.return_value.explode.return_value = 'ka-blooey!'
+        # Note that in the command above, mock_class.return_value returns
+        # the MM object that represents an instance of SimpleClass so
+        # mock_class.return_value.explode returns a new MM object that
+        # represents the explode method of that SimpleClass instance.
+        # Therefore, mock_class.return_value.explode.return_value sets
+        # The return value of the mocked explode method of that mocked
+        # class instance.
+
+        # Now continuing, create an instance of the mocked class
+        inst = cls.SimpleClass()
+        # Call the instance method
+        result = inst.explode()
+        #print(result)
+        self.assertEqual(result, 'ka-blooey!')
+
+    @mock.patch('run.classes.SimpleClass.yell')
+    def test_mock_class_method(self, mock_class_method):
+        """
+        howto: mock a class method
+
+        Note that you're not setting autospec=True.  Therefore, if
+        you change yell by adding a parameter, this test will still
+        pass.
+        """
+        mock_class_method.return_value = 'fuck you all to hell!'
+        inst = cls.SimpleClass()
+        result = inst.yell()
+        self.assertEqual(result, 'fuck you all to hell!')
+
+    def test_plain_class(self):
+        """
+        howto: test a class without mocks
+        """
+        self.assertEqual(func.use_simple_class(), "kaboom!")
+
+    def test_class_string(self):
+        # howto: test a class default string
         self.assertEqual(cls.Class1.__str__(self), "I am class 1!")
 
     @mock.patch('run.classes.Class2')
@@ -91,10 +150,6 @@ class TestClass(unittest.TestCase):
         # howto: show that mocked class object was called
         cls.Class1()
         cls.Class2()
-        #assert mock_class1 is cls.Class1
-        #assert mock_class2 is cls.Class2
-        #assert mock_class1.called
-        #assert mock_class2.called
         self.assertIs(mock_class1, cls.Class1)
         self.assertIs(mock_class2, cls.Class2)
         self.assertTrue(mock_class1.called)
@@ -103,22 +158,72 @@ class TestClass(unittest.TestCase):
 
 class TestFunc(unittest.TestCase):
 
-    def test_logger_func(self):
-        # howto: test logs were written to
+    def test_send_mail(self):
+        """
+        howto: send testing mail using monkey patching
+        """
+        def fake_send_mail(subject='foo', body='baz', from_email='jeek', to_list='[]'):
+            self.subject = subject
+            self.body = body
+            self.from_email = from_email
+            self.send_mail_called = True
+
+        self.send_mail_called = False
+        # Replace Python's send_mail with your fake version and use the
+        # latter for testing
+        func.send_mail = fake_send_mail
+        func.send_mail()
+        self.assertTrue(self.send_mail_called)
+
+    def test_logger(self):
+        """
+        howto: test logs were written to
+        """
         with self.assertLogs('run.functions', 'INFO'):  # Will run without args
             func.logger_function()
 
-    def test_func_no_mock(self):
-        # howto: test a function without mocks
-        self.assertEqual(func.function(), "You have called function!")
-
     @mock.patch('run.functions.function')
     def test_func_with_mock(self, mock_func):
-        # howto: mock the return value of a function
-        #print(mock_func)   # mock_func is a MagicMock
+        """
+        howto: mock the return value of a function
+        """
         mock_func.return_value = "You have called a mocked function!"
         self.assertEqual(func.function(), "You have called a mocked function!")
 
+    def test_func_without_mock(self):
+        """
+        howto: test a function without mocks
+        """
+        self.assertEqual(func.function(), "You have called function!")
+
+    @mock.patch('run.functions.function')
+    def test_func_with_side_effect(self, mock_func):
+        """
+        howto: mock a side effect
+        """
+        mock_func.side_effect = func.side_effect_function
+        self.assertEqual(func.function(), "You've called the side effect function!")
+
+    #@unittest.skip('')
+    @mock.patch('run.functions.function')
+    def test_use_function(self, mock_func):
+        """
+        Show that the function is being mocked
+        """
+        # Show mock
+        #print(mock_func)
+        # Show function has been mocked
+        #print(func.function)
+        # Show calling the function returns a mock
+        # Here, we're calling the mock which returns a different mock.
+        # Since MagicMock implements __call__, we can call a MM.
+        # This is a child mock of the func.function() mock.
+        # See http://bit.ly/2x4P7a5
+        #print(func.function())
+        self.assertIs(func.function, mock_func)
+        self.assertIsNot(func.function, func.function())
+
+    @unittest.skip('')
     #@unittest.expectedFailure
     @mock.patch('run.models.Car', autospec=True)
     def test_function_gets_object(self, mock_car):
@@ -143,56 +248,53 @@ class TestFunc(unittest.TestCase):
 class TestModel(unittest.TestCase):
 
     @mock.patch('django.contrib.auth.models.User', autospec=True)
-    def test_user(self, mock_user):
-        # howto: mock a user
+    def test_mock_user(self, mock_user):
+        """
+        howto: test a mocked user
+        """
         mock_user.username = 'robert'
         mock_user.email = 'robert@example.com'
         self.assertEqual(mock_user.username, 'robert')
         mock_user.get_username.return_value = 'bob'
         self.assertEqual(mock_user.get_username(), 'bob')
 
-    def test_create_car(self):
-        """
-        howto: test crud: test creating an instance of a model
-        howto: test that an object is an instance of a class
-
-        You should run this test on every model!
-        """
-        car = Car(make='Honda', model='Civic')
-        self.assertIsInstance(car, Car)
-
-        # Optional:
-        #self.assertEqual(Car.__str__(car), "Honda Civic")
-
-        # full_clean() will detect whether or not the model instance is valid.
-        # But it isn't needed.  Instantiating a model as shown above is sufficient.
-        #car.full_clean()
-
-    def test_create_car_mock(self):
+    @mock.patch('run.models.Car', autospec=True)
+    def test_model_instance(self, mock_car):
         """
         howto: test crud: create an instance of a model using a mock
-
-        This is equivalent to test_create_car, just an alternate way to
-        do it.  "spec" ensures that changes to Car will be caught.
+        howto: mock a model's attributes
         """
-        mock_car = mock.Mock(spec=Car)
         mock_car.make = "Honda"
         mock_car.model = "Civic"
         # howto: test mock model methods
+        self.assertIsInstance(mock_car, Car)
         self.assertEqual(Car.__str__(mock_car), "Honda Civic")
         self.assertEqual(Car.sound(mock_car), "vrooom!")
 
-    def test_dealer_method(self):
-        # howto: mock a model method
-        # LEARN HOW TO DO THIS.
-        pass
+    @mock.patch('run.models.Book', autospec=True)
+    @mock.patch('run.models.Author', autospec=True)
+    def test_model_instance_with_fk(self, mock_author, mock_book):
+        """
+        howto: test a model instance having a foreign key (FK)
+        """
+        # independent instance
+        mock_author.name = 'Henry Miller'
+        # dependent FK instance
+        mock_book.title = 'Time of the Assassins'
+        mock_book.author = mock_author
+        a = Author()
+        b = Book()
+        self.assertIsInstance(a, Author)
+        self.assertIsInstance(b, Book)
 
-    @mock.patch('run.models.Dealer', autospec=True)
-    def test_dealer_attrs(self, mock_dealer):
-        # howto: mock a model's attributes using patch decorator
-        mock_dealer.name = "Santa Monica BMW"
-        mock_dealer.city = "Santa Monica"
-        mock_dealer.num_of_cars.return_value = 200
+    @mock.patch('run.models.Book.retrieve_isbn', autospec=True)
+    def test_model_method(self, mock_method):
+        """
+        howto: mock a model method
+        """
+        mock_method.return_value = 'foo123'
+        isbn = Book().retrieve_isbn()
+        self.assertEqual(isbn, 'foo123')
 
 
 class TestView(TestCase):
@@ -202,6 +304,17 @@ class TestView(TestCase):
         factory = RequestFactory()
         request = factory.get('get')
         response = views.get_view(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_post_view(self):
+        factory = RequestFactory()
+        form_data = {
+            'data1': 'data 1',
+            'data2': 'data 2',
+        }
+        # When POSTing a form, the data arrives in request.POST.
+        request = factory.post('userpost', data=form_data)
+        response = views.post_view(request, uid=1, uname='foobar')
         self.assertEqual(response.status_code, 200)
 
     def test_posargs_view(self):
@@ -222,17 +335,6 @@ class TestView(TestCase):
         factory = RequestFactory()
         request = factory.post('user')
         response = views.kwargs_view(request, uid=1, uname='foobar')
-        self.assertEqual(response.status_code, 200)
-
-    def test_post_view(self):
-        factory = RequestFactory()
-        form_data = {
-            'data1': 'data 1',
-            'data2': 'data 2',
-        }
-        # When POSTing a form, the data arrives in request.POST.
-        request = factory.post('userpost', data=form_data)
-        response = views.post_view(request, uid=1, uname='foobar')
         self.assertEqual(response.status_code, 200)
 
     def test_mock_view_needing_user_session(self):
@@ -295,7 +397,7 @@ class TestView(TestCase):
         self.assertJSONEqual(response_content, {"status": "200"})
 
 
-class TestViewsWebTest(WebTest):
+class TestViewUsingWebTest(WebTest):
     # Tests that use WebTest
     # howto: use webtest to test a view
 
@@ -316,32 +418,3 @@ class TestViewsWebTest(WebTest):
         locale = 'es-mx'
         resp = self.app.post(reverse('locale'))
         self.assertEqual(resp.status_int, 200)
-
-
-# howto: skip tests that are expected to fail
-#class ExpectedFailureTestCase(unittest.TestCase):
-#    @unittest.expectedFailure
-#    def test_fail(self):
-#        self.assertEqual(1, 0, "broken")
-
-
-# howto: skip a class using unittest decorator
-# See https://matthewdaly.co.uk/blog/2015/08/02/testing-django-views-in-isolation/
-#@unittest.skip('Skip entire class')
-#class SnippetCreateViewTest(TestCase):
-#    """
-#    Test the snippet create view
-#    """
-#    def setUp(self):
-#        self.user = UserFactory()
-#        self.factory = RequestFactory()
-#    def test_get(self):
-#        """
-#        Test GET requests
-#        """
-#        request = self.factory.get(reverse('snippet_create'))
-#        request.user = self.user
-#        response = SnippetCreateView.as_view()(request)
-#        self.assertEqual(response.status_code, 200)
-#        self.assertEqual(response.context_data['user'], self.user)
-#        self.assertEqual(response.context_data['request'], request)

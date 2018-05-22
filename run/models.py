@@ -18,10 +18,16 @@ class Author(models.Model):
 
 class Book(models.Model):
     title = models.CharField(max_length=100)
-    author = models.ForeignKey(Author)
+    # Assigning related_name to FK allows you to do this:
+    # a = Author.objects.create(name='Henry Miller')
+    # a.books.create(name='Time of the Assassins')
+    author = models.ForeignKey(Author, related_name='books')
 
     def __str__(self):
         return self.title
+
+    def retrieve_isbn(self):
+        return 'abc123'
 
     class Meta:
         db_table = 'book'
