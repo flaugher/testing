@@ -185,6 +185,11 @@ class TestFunc(unittest.TestCase):
     def test_send_mail(self):
         """
         howto: send testing mail using monkey patching
+
+        Note that you could also mock the send_mail function:
+        @mock.patch('run.functions.send_login_email.send_mail')
+        def fake_send_mail(self, mock_send_mail):
+            ...
         """
         def fake_send_mail(subject='foo', body='baz', from_email='jeek', to_list='[]'):
             self.subject = subject
