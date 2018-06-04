@@ -1,8 +1,10 @@
+from pdb import set_trace as debug
+
 import factory
 
 from django.contrib.auth.models import User
 
-#from .models import List, ListType, Item
+from .models import Author, Publisher
 
 
 class UserFactory(factory.DjangoModelFactory):
@@ -12,35 +14,24 @@ class UserFactory(factory.DjangoModelFactory):
     username = 'robert'
 
 
-#class ListTypeFactory(factory.DjangoModelFactory):
-#    class Meta:
-#        model = ListType
-#
-#    type = 'Member'
-#
-#
-#class ListFactory(factory.DjangoModelFactory):
-#    class Meta:
-#        model = List
-#
-#    owner = factory.SubFactory(UserFactory)
-#    type = factory.SubFactory(ListTypeFactory)
-#
-#
-#class ItemFactory(factory.DjangoModelFactory):
-#    class Meta:
-#        model = Item
-#
-#    type = factory.SubFactory(ListTypeFactory)
-#    #value = 1
-#
-#    @factory.post_generation
-#    def lists(self, create, extracted, **kwargs):
-#        if not create:
-#            # Simple build, do nothing.
-#            return
-#
-#        if extracted:
-#            # A list of groups were passed in, use them
-#            for list in extracted:
-#                self.lists.add(list)
+class AuthorFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Author
+
+    name = 'Henry Miller'
+
+
+class PublisherFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Publisher
+
+    house = 'Random House'
+
+    @factory.post_generation
+    def authors(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for author in authors:
+                self.authors.add(author)

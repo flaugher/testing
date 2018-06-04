@@ -34,7 +34,19 @@ from . import classes as cls
 
 class TestModel(unittest.TestCase):
 
-    def test_lookup_table(self):
+    def test_many_to_many_factory(self):
+        """
+        howto: create factory for table containing a many-to-many (manytomany) relationship.
+        """
+        publisher = PublisherFactory(house='Harper Collins')
+        author = AuthorFactory(name='Henry Thoreau')
+        publisher.authors.add(author)
+        self.assertIsInstance(publisher, Publisher)
+        # If you debug here and query the test_testing database, you'd
+        # see the publisher and author records with a linking table entry
+        # that links the two tables.
+
+    def test_mock_lookup_table(self):
         """
         howto: mock a lookup table using mock-django library
         """
@@ -61,7 +73,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(mock_user.get_username(), 'bob')
 
     @mock.patch('run.models.Car', autospec=True)
-    def test_model_instance(self, mock_car):
+    def test_mock_model_instance(self, mock_car):
         """
         howto: test crud: create an instance of a model using a mock
         howto: mock a model's attributes
@@ -75,7 +87,7 @@ class TestModel(unittest.TestCase):
 
     @mock.patch('run.models.Book', autospec=True)
     @mock.patch('run.models.Author', autospec=True)
-    def test_model_instance_with_fk(self, mock_author, mock_book):
+    def test_mock_model_instance_with_fk(self, mock_author, mock_book):
         """
         howto: test a model instance having a foreign key (FK)
         """
@@ -90,7 +102,7 @@ class TestModel(unittest.TestCase):
         self.assertIsInstance(b, Book)
 
     @mock.patch('run.models.Book.retrieve_isbn', autospec=True)
-    def test_model_method(self, mock_method):
+    def test_mock_model_method(self, mock_method):
         """
         howto: mock a model method
         """
