@@ -16,12 +16,25 @@ class Author(models.Model):
         db_table = 'author'
 
 
+class Genre(models.Model):
+    """
+    A lookup table of book genres.
+    """
+    genre = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.genre
+
+    class Meta:
+        db_table = 'genre'
+
 class Book(models.Model):
     title = models.CharField(max_length=100)
     # Assigning related_name to FK allows you to do this:
     # a = Author.objects.create(name='Henry Miller')
     # a.books.create(name='Time of the Assassins')
     author = models.ForeignKey(Author, related_name='books')
+    genre =  models.ForeignKey(Genre, related_name='genres')
 
     def __str__(self):
         return self.title

@@ -1,6 +1,7 @@
 try:  # python3
     from unittest import mock
     from unittest.mock import patch
+    from unittest.mock import MagicMock
     from unittest.mock import MagicMock as MM
 except ImportError as e:  # python 2
     import mock
@@ -16,7 +17,10 @@ from django.test import TestCase, RequestFactory
 from django.utils import six
 
 from django_webtest import WebTest
-from .models import Car, Dealer, Author, Book, Publisher
+from mock_django import ModelMock
+
+from .factories import *
+from .models import Car, Dealer, Author, Book, Publisher, Genre
 from . import functions as func
 from . import views
 from . import classes as cls
@@ -29,6 +33,21 @@ from . import classes as cls
 
 
 class TestModel(unittest.TestCase):
+
+    def test_lookup_table(self):
+        """
+        howto: mock a lookup table using mock-django library
+        """
+        mock_genre = ModelMock(Genre)   # Genre is a lookup table
+        mock_genre.id = 1
+        mock_genre.genre = 'Science Fiction'
+        mock_author = MagicMock(spec=Author, autospec=True)
+        mock_author.name = 'Henry Miller'
+        # I shouldn't have to manually set _state.  Not sure why test
+        # was failing if I didn't.
+        mock_author._state = mock.Mock()
+        b = Book(author=mock_author, genre=mock_genre, title='Time of the Assassins')
+        self.assertIsInstance(b, Book)
 
     @mock.patch('django.contrib.auth.models.User', autospec=True)
     def test_mock_user(self, mock_user):
