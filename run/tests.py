@@ -46,6 +46,26 @@ class TestModel(unittest.TestCase):
         # see the publisher and author records with a linking table entry
         # that links the two tables.
 
+    def test_lookup_table_pass(self):
+        """
+        howto: test a lookup table without using mocks
+        Note that the lookup table is populated by a migration file
+        which is run before the test is executed.
+        """
+        genre_name = 'history'
+        genre_inst = Genre.read_genre(genre_name)
+        self.assertIsInstance(genre_inst, Genre)
+        self.assertEqual(genre_inst.genre, genre_name)
+
+    def test_lookup_table_fail(self):
+        """
+        A failing version of test_lookup_table
+        """
+        genre_name = 'fantasy'
+        genre_inst = Genre.read_genre(genre_name)
+        self.assertIsNone(genre_inst, Genre)
+        self.assertRaises(Genre.DoesNotExist)
+
     def test_mock_lookup_table(self):
         """
         howto: mock a lookup table using mock-django library

@@ -1,3 +1,4 @@
+from pdb import set_trace as debug
 from django.db import models
 
 """
@@ -27,6 +28,17 @@ class Genre(models.Model):
 
     class Meta:
         db_table = 'genre'
+
+    @staticmethod
+    def read_genre(genre_name):
+        try:
+            genre_inst = Genre.objects.get(genre=genre_name)
+        except Genre.DoesNotExist:
+            #msg = "Genre '%s' doesn't exist" % (genre_name)
+            #logger.error(msg, exc_info=True)
+            return None
+        else:
+            return genre_inst
 
 class Book(models.Model):
     title = models.CharField(max_length=100)
